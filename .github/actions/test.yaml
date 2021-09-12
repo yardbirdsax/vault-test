@@ -1,0 +1,15 @@
+name: "Run Go Tests"
+inputs:
+  go-version:
+    description: The version of Golang to use
+    required: true
+    default: "1.16"
+runs:
+  using: composite
+  steps:
+    - name: Install Golang
+      uses: action/setup-go@v2
+      with:
+        go-version: ${{ inputs.go-version }}
+    - name: Run Go tests
+      run: go test -v ./assert/... ./client/... ./helper/...
