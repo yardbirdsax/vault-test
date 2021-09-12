@@ -45,6 +45,6 @@ func TestVaultSecret (t *testing.T) {
 	})
 
 	test_structure.RunTestStage(t, "vault_test", func() {
-		assert.AssertVaultSecretExists(t, client.Logical(), vaultPath, vaultKey)
+		assert.AssertVaultSecretExists(t, client.Logical(), vaultPath, vaultKey, vaultSecret)
 	})
 }
