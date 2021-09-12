@@ -12,6 +12,9 @@ runs:
       uses: actions/setup-go@v2
       with:
         go-version: ${{ inputs.go-version }}
-    - name: Run Go tests
+    - name: Run Go unit tests
       shell: bash
       run: go test -v ./assert/... ./client/... ./helper/...
+    - name: Run Terratest example
+      shell: bash
+      run: go test -v ./example/...

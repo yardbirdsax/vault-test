@@ -5,7 +5,7 @@ on:
       - "*"
 jobs:
   vaultTest:
-    name: Execute Vault integration tests
+    name: Execute tests
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
