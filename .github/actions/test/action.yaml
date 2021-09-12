@@ -9,7 +9,7 @@ runs:
   using: composite
   steps:
     - name: Install Golang
-      uses: action/setup-go@v2
+      uses: actions/setup-go@v2
       with:
         go-version: ${{ inputs.go-version }}
     - name: Run Go tests
