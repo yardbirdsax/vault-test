@@ -1,21 +1,27 @@
+/* This package contains code that makes it easy to test code that interacts with Hashicorp Vault, by enabling the creation of an in-memory Vault
+cluster that is easily disposed of once testing is complete.
+*/
 package helper
 
 import (
 	"net"
 	"testing"
 
-
-
 	"github.com/hashicorp/vault/api"
 	"github.com/hashicorp/vault/http"
 	"github.com/hashicorp/vault/vault"
+
+	"github.com/yardbirdsax/vault-test/client"
 )
 
 const (
-	colorRed = "\033[31m"
-	colorReset = "\033[0m"
+	ColorRed = "\033[31m"
+	ColorReset = "\033[0m"
 )
 
+/* 
+CreateTestCluster creates an in-memory Vault cluster that can be used for testing code that interacts with Vault. 
+*/
 func CreateTestCluster(t *testing.T) (net.Listener, *api.Client) {
 	t.Helper()
 
@@ -35,10 +41,14 @@ func CreateTestCluster(t *testing.T) (net.Listener, *api.Client) {
 	return listener, client
 }
 
-func MountVaultSecretEngine(t *testing.T, client *api.Sys, path string) {
+/*
+MountVaultSecretEngine configures a new mount within a Vault cluster. It can be used to configure the in-memory Vault client
+with other mounts beyond the default KV at the `secret/` path.
+*/
+func MountVaultSecretEngine(t *testing.T, client client.VaultSysClient, path string, mountType string, options map[string]string) {
 	mountInput := &api.MountInput{
-		Type: "kv",
-		Options: map[string]string{ "version": "2"},
+		Type: mountType,
+		Options: options,
 	}
 	err := client.Mount(path, mountInput)
 	if err != nil {
@@ -46,44 +56,17 @@ func MountVaultSecretEngine(t *testing.T, client *api.Sys, path string) {
 	}
 }
 
-type VaultLogicalClient interface {
-	Read(string) (*api.Secret, error)
-	Delete(string) (*api.Secret, error)
-}
-
-// AssertVaultSecretExists asserts that a secret exists at the given path with the given key.
-func AssertVaultSecretExists(t *testing.T, client VaultLogicalClient, path string, key string) {
-	secret, err := ReadVaultSecretE(client, path)
- 		if err != nil {
-		t.Log(err)
-		t.Fail()
-	}
-	if secret == nil {
-		t.Logf("%sSecret not found at path '%s'.%s", colorRed, path, colorReset)
-		t.Fail()
-		return
-	}
-	
-	if _, exists := secret.Data[key]; !exists {
-		t.Logf("%sSecret at path '%s' does not contain a key with the name '%s'.%s", colorRed, path, key, colorReset)
-		t.Fail()
-	}
-}
-
-func DeleteVaultSecret(t *testing.T, client VaultLogicalClient, path string) {
-	_, err := client.Delete(path)
-	if err != nil {
-		t.Log(err)
-		t.Fail()
-	}
-}
-
-func ReadVaultSecretE(client VaultLogicalClient, path string) (*api.Secret, error) {
+/*
+ReadVaultSecretE reads a secret at the given path from Vault. It is basically a thin wrapper around the
+built in [Read](https://pkg.go.dev/github.com/hashicorp/vault/api#Logical.Read) method, done for the purpose
+of making testing of this library easier.
+*/
+func ReadVaultSecretE(client client.VaultLogicalClient, path string) (*api.Secret, error) {
 	secret, err := client.Read(path)
 	return secret, err
 }
 
-func GetVaultClientE(config *api.Config, token string) (VaultLogicalClient, error){
+func GetVaultClientE(config *api.Config, token string) (client.VaultLogicalClient, error){
 	client, err := api.NewClient(config)
 	if err != nil {
 		return nil, err
