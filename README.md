@@ -18,10 +18,9 @@ import (
 func TestAssertVaultSecretExists(t *testing.T) {
 	// Setup
 	listener, client := helper.CreateTestCluster(t)
-	// This will run at the end of the test
-  defer listener.Close()
+	defer listener.Close()
 
-  // Do your testing here
+    // Assert stuff here
 }
 ```
 
